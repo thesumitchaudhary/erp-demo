@@ -274,15 +274,15 @@ function PurchaseAndInward() {
         </DashboardCard>
         </div>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-          <div className="rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-5 xl:min-h-[260px]">
+        <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-5 xl:min-h-[260px]">
             <div className="text-[14px] font-bold leading-tight text-slate-950">Purchase Value Trend</div>
             <PurchaseValueTrendChart points={purchaseTrend} />
           </div>
 
-          <div className="rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[260px]">
+          <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[260px]">
             <div className="text-[18px] font-bold leading-tight text-slate-950">Vendor Reliability</div>
-            <div className="mt-1 overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-0">
+            <div className="mt-1 min-w-0 max-w-full overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-0">
             <table className="w-full min-w-[440px] table-fixed text-left text-[12px] sm:min-w-0">
               <colgroup>
                 <col className="w-[56%]" />

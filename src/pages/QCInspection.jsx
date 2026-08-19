@@ -155,8 +155,8 @@ function QCInspection() {
 
       <KpiGrid items={kpis} />
 
-      <div className="grid items-start gap-4 xl:grid-cols-[1.35fr_1fr]">
-        <div className="rounded-md border border-slate-200 bg-white p-4 pb-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 sm:pb-4">
+      <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 pb-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 sm:pb-4">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="text-[16px] font-bold leading-tight text-slate-950">QC Testing Queue</div>
             <div className="text-[12px] leading-relaxed text-slate-400 sm:text-right">
@@ -164,8 +164,8 @@ function QCInspection() {
             </div>
           </div>
 
-          <div className="pb-1">
-            <table className="w-full min-w-[500px] table-fixed text-left text-[13px]">
+          <div className="min-w-0 max-w-full overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-1">
+            <table className="w-full min-w-[500px] table-fixed text-left text-[13px] sm:min-w-0">
               <colgroup>
                 <col className="w-[16%]" />
                 <col className="w-[25%]" />
@@ -227,7 +227,7 @@ function QCInspection() {
           </div>  
         </div>
 
-        <div className="rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[340px]">
+        <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[340px]">
           <div className="text-[20px] font-bold leading-tight text-slate-950">
             Right-First-Time Trend
           </div>
