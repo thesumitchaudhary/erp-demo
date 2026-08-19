@@ -1,5 +1,5 @@
-import { Fragment } from 'react'
-import { Check } from 'lucide-react'
+import { Fragment, useEffect, useState } from 'react'
+import { Check, X } from 'lucide-react'
 
 import {
   AnimatedKpiValue,
@@ -8,6 +8,7 @@ import {
   KpiGrid,
   PageHeader,
   StatusBadge,
+  SvgChartTooltip,
 } from '@/components/erp-dashboard'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -116,6 +117,44 @@ const vendorReliability = [
 ]
 
 function PurchaseAndInward() {
+  const [inspectionModalOpen, setInspectionModalOpen] = useState(false)
+  const [inspectionComplete, setInspectionComplete] = useState(false)
+  const [inspectionProgress, setInspectionProgress] = useState(0)
+
+  useEffect(() => {
+    if (!inspectionModalOpen || inspectionComplete) {
+      return undefined
+    }
+
+    const intervalId = window.setInterval(() => {
+      setInspectionProgress((currentProgress) => {
+        if (currentProgress >= 100) {
+          return 100
+        }
+
+        const nextProgress = Math.min(currentProgress + 7, 100)
+
+        if (nextProgress === 100) {
+          window.setTimeout(() => setInspectionComplete(true), 350)
+        }
+
+        return nextProgress
+      })
+    }, 120)
+
+    return () => window.clearInterval(intervalId)
+  }, [inspectionComplete, inspectionModalOpen])
+
+  const openInspectionModal = () => {
+    setInspectionModalOpen(true)
+    setInspectionComplete(false)
+    setInspectionProgress(0)
+  }
+
+  const closeInspectionModal = () => {
+    setInspectionModalOpen(false)
+  }
+
   return (
     <DashboardShell activeKey="purchase">
       <div className="purchase-inward-page">
@@ -127,7 +166,7 @@ function PurchaseAndInward() {
 
         <KpiGrid items={kpis} />
 
-        <div className="grid items-start gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.9fr)]">
         <DashboardCard
           title="Purchase Orders"
           description='Click "Receive" to record raw material inward against an approved PO'
@@ -142,55 +181,55 @@ function PurchaseAndInward() {
             </Button>
           }
         >
-          <div className="overflow-x-auto pb-1">
-            <table className="w-full min-w-[760px] table-fixed text-left text-[13px]">
+          <div className="overflow-x-auto pb-1 md:overflow-x-visible md:pb-0">
+            <table className="w-full min-w-[640px] table-fixed text-left text-[12px] md:min-w-0">
               <colgroup>
-                <col className="w-[8%]" />
-                <col className="w-[19%]" />
-                <col className="w-[22%]" />
+                <col className="w-[10%]" />
+                <col className="w-[21%]" />
+                <col className="w-[24%]" />
                 <col className="w-[9%]" />
                 <col className="w-[18%]" />
-                <col className="w-[24%]" />
+                <col className="w-[18%]" />
               </colgroup>
               <thead className="border-b border-slate-200 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 <tr>
-                  <th className="px-2 py-2.5">PO No.</th>
-                  <th className="px-2 py-2.5">Vendor</th>
-                  <th className="px-2 py-2.5">Item</th>
-                  <th className="px-2 py-2.5">Qty</th>
-                  <th className="px-2 py-2.5">Status</th>
-                  <th className="px-2 py-2.5">Action</th>
+                  <th className="px-1.5 py-2.5">PO No.</th>
+                  <th className="px-1.5 py-2.5">Vendor</th>
+                  <th className="px-1.5 py-2.5">Item</th>
+                  <th className="px-1.5 py-2.5">Qty</th>
+                  <th className="px-1.5 py-2.5">Status</th>
+                  <th className="px-1.5 py-2.5">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {purchaseOrders.map((order) => (
                   <tr key={order.po} className="transition-colors hover:bg-slate-50/80">
-                    <td className="px-2 py-3.5 align-middle">
+                    <td className="px-1.5 py-3.5 align-middle">
                       <PONumber value={order.po} />
                     </td>
-                    <td className="px-2 py-3.5 align-middle font-medium leading-tight text-slate-800">
+                    <td className="px-1.5 py-3.5 align-middle font-medium leading-tight text-slate-800">
                       {order.vendor}
                     </td>
-                    <td className="px-2 py-3.5 align-middle leading-tight text-slate-700">
+                    <td className="px-1.5 py-3.5 align-middle leading-tight text-slate-700">
                       {order.item}
                     </td>
-                    <td className="px-2 py-3.5 align-middle leading-tight text-slate-500">
+                    <td className="px-1.5 py-3.5 align-middle leading-tight text-slate-500">
                       {order.qty}
                     </td>
-                    <td className="px-2 py-3.5 align-middle">
-                      <StatusBadge tone={order.tone} className="px-3 py-1 text-[10px] font-semibold">
+                    <td className="px-1.5 py-3.5 align-middle">
+                      <StatusBadge tone={order.tone} className="max-w-full justify-center whitespace-normal px-2 py-1 text-center text-[10px] font-semibold leading-tight">
                         {order.status}
                       </StatusBadge>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-3.5 align-middle">
+                    <td className="px-1.5 py-3.5 align-middle">
                       {order.action === 'Completed' ? (
-                        <span className="text-xs font-medium text-slate-400">Completed</span>
+                        <span className="block max-w-full text-xs font-medium leading-tight text-slate-400">Completed</span>
                       ) : order.action === 'Send for Approval' ? (
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="h-8 rounded-md border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-950 hover:bg-slate-50"
+                          className="h-auto min-h-8 max-w-full whitespace-normal rounded-md border-slate-200 bg-white px-2 text-center text-[10px] font-semibold leading-tight text-slate-950 hover:bg-slate-50"
                         >
                           {order.action}
                         </Button>
@@ -198,13 +237,13 @@ function PurchaseAndInward() {
                         <Button
                           type="button"
                           size="sm"
-                          className="h-8 rounded-md bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700"
+                          className="h-8 max-w-full rounded-md bg-teal-600 px-2.5 text-[10px] font-semibold text-white hover:bg-teal-700"
                         >
                           {order.action}
                         </Button>
                       )}
                     </td>
-                  </tr>
+                  </tr> 
                 ))}
               </tbody>
             </table>
@@ -226,6 +265,7 @@ function PurchaseAndInward() {
             <Button
               type="button"
               size="sm"
+              onClick={openInspectionModal}
               className="h-9 w-fit rounded-md bg-teal-600 px-3.5 text-xs font-semibold text-white hover:bg-teal-700"
             >
               Simulate Incoming Inspection Pass &rarr;
@@ -242,8 +282,8 @@ function PurchaseAndInward() {
 
           <div className="rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[260px]">
             <div className="text-[18px] font-bold leading-tight text-slate-950">Vendor Reliability</div>
-            <div className="mt-1 overflow-x-auto pb-1">
-            <table className="w-full min-w-[420px] table-fixed text-left text-[14px]">
+            <div className="mt-1 overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-0">
+            <table className="w-full min-w-[440px] table-fixed text-left text-[12px] sm:min-w-0">
               <colgroup>
                 <col className="w-[56%]" />
                 <col className="w-[22%]" />
@@ -269,6 +309,13 @@ function PurchaseAndInward() {
             </div>
           </div>
         </div>
+
+        <IncomingInspectionModal
+          complete={inspectionComplete}
+          onClose={closeInspectionModal}
+          open={inspectionModalOpen}
+          progress={inspectionProgress}
+        />
       </div>
     </DashboardShell>
   )
@@ -286,13 +333,127 @@ function PONumber({ value }) {
   )
 }
 
+function IncomingInspectionModal({ complete, onClose, open, progress }) {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-[1px]"
+      role="dialog"
+    >
+      <button
+        type="button"
+        aria-label="Close incoming inspection"
+        className="absolute inset-0"
+        onClick={onClose}
+      />
+      <div className="relative w-[calc(100vw-2rem)] max-w-[760px] rounded-2xl bg-white p-5 shadow-2xl sm:p-7">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="text-[19px] font-bold leading-tight text-slate-950 sm:text-2xl">
+              Incoming Inspection &mdash; Batch CR-0824-09
+            </h3>
+            <p className="mt-2 text-sm font-medium leading-tight text-slate-400 sm:text-base">
+              Conn. Rod Forging Blanks (EN19)
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close incoming inspection"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full rounded-full bg-teal-600 transition-[width] duration-150 ease-out"
+            style={{ width: `${complete ? 100 : progress}%` }}
+          />
+        </div>
+
+        <p className="mt-6 font-mono text-sm font-semibold leading-relaxed text-slate-400 sm:text-base">
+          {complete
+            ? 'Finalizing incoming disposition...'
+            : 'Checking for surface cracks and forging laps...'}
+        </p>
+
+        {complete ? (
+          <>
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm sm:p-5 sm:text-base">
+              <InspectionResultRow
+                label="Disposition"
+                value="PASS - Released to Machine Shop"
+                valueClassName="text-emerald-600"
+              />
+              <InspectionResultRow
+                label="Overall Length"
+                meta={<>Spec: 168.0&plusmn;0.5mm</>}
+                value="168.4mm"
+              />
+              <InspectionResultRow
+                label="Surface Check"
+                value="No cracks / laps found"
+              />
+              <InspectionResultRow
+                label="Machining Stock Allowance"
+                value="Within limit"
+              />
+            </div>
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={onClose}
+              className="mt-5 h-11 rounded-md bg-teal-600 px-5 text-sm font-bold text-white hover:bg-teal-700"
+            >
+              Confirm &amp; Release to Machine Shop
+            </Button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function InspectionResultRow({ label, meta, value, valueClassName }) {
+  return (
+    <div className="grid gap-1 py-1.5 sm:grid-cols-[210px_1fr] sm:items-baseline">
+      <div className="font-mono text-sm font-semibold text-slate-500 sm:text-base">
+        {label}
+      </div>
+      <div className="min-w-0 text-left sm:text-right">
+        <span
+          className={cn(
+            'font-mono text-sm font-bold leading-tight text-slate-950 sm:text-base',
+            valueClassName,
+          )}
+        >
+          {value}
+        </span>
+        {meta ? (
+          <span className="ml-2 font-mono text-sm font-bold leading-tight text-slate-400 sm:text-base">
+            ({meta})
+          </span>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function RawMaterialFlow({ steps }) {
   const topSteps = steps.slice(0, 3)
   const currentStep = steps[3]
   const finalStep = steps[4]
 
   return (
-    <div className="px-1 pt-1">
+    <div className="overflow-x-auto pb-1 md:overflow-x-visible md:pb-0">
+      <div className="min-w-[520px] px-1 pt-1 md:min-w-0">
       <div
         className="grid items-start"
         style={{
@@ -315,6 +476,7 @@ function RawMaterialFlow({ steps }) {
         <FlowStep step={currentStep} />
         <FlowLine className="mt-5" />
         <FlowStep step={finalStep} />
+      </div>
       </div>
     </div>
   )
@@ -343,6 +505,7 @@ function FlowStep({ step }) {
 }
 
 function PurchaseValueTrendChart({ points }) {
+  const [activePoint, setActivePoint] = useState(null)
   const width = 720
   const height = 220
   const padding = { left: 44, right: 20, top: 12, bottom: 32 }
@@ -354,7 +517,13 @@ function PurchaseValueTrendChart({ points }) {
   const yFor = (value) => padding.top + ((40 - value) / 40) * chartHeight
 
   return (
-    <svg className="mt-1 h-[200px] w-full sm:h-[220px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Purchase value trend chart">
+    <svg
+      className="mt-1 h-[200px] w-full sm:h-[220px]"
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label="Purchase value trend chart"
+      onMouseLeave={() => setActivePoint(null)}
+    >
       {yValues.map((value) => (
         <g key={value}>
           <line
@@ -379,14 +548,52 @@ function PurchaseValueTrendChart({ points }) {
         const barHeight = height - padding.bottom - y
 
         return (
-          <g key={point.month}>
-            <rect x={x} y={y} width={barWidth} height={barHeight} rx="6" fill="#0f9a8f" />
+          <g
+            key={point.month}
+            onBlur={() => setActivePoint(null)}
+            onFocus={() =>
+              setActivePoint({
+                title: point.month,
+                value: `Rs. ${point.value}L purchase value`,
+                x: x + barWidth / 2,
+                y,
+              })
+            }
+            onMouseEnter={() =>
+              setActivePoint({
+                title: point.month,
+                value: `Rs. ${point.value}L purchase value`,
+                x: x + barWidth / 2,
+                y,
+              })
+            }
+            tabIndex={0}
+          >
+            <rect
+              x={x}
+              y={y}
+              width={barWidth}
+              height={barHeight}
+              rx="6"
+              fill="#0f9a8f"
+              opacity={activePoint?.title === point.month ? '1' : '0.88'}
+            />
             <text x={x + barWidth / 2} y={height - 8} textAnchor="middle" className="fill-slate-500 text-[12px]">
               {point.month}
             </text>
           </g>
         )
       })}
+      {activePoint ? (
+        <SvgChartTooltip
+          title={activePoint.title}
+          value={activePoint.value}
+          viewBoxWidth={width}
+          x={activePoint.x}
+          y={activePoint.y}
+          width={184}
+        />
+      ) : null}
     </svg>
   )
 }

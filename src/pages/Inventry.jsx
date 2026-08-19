@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { CalendarClock, ClipboardPlus } from 'lucide-react'
 
 import {
@@ -8,6 +9,7 @@ import {
   PageHeader,
   ProgressBar,
   StatusBadge,
+  SvgChartTooltip,
 } from '@/components/erp-dashboard'
 import { Button } from '@/components/ui/button'
 
@@ -100,7 +102,7 @@ function ZoneStat({ label, value, tone, progress }) {
       <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</div>
       <div className={`mt-2 text-xl font-bold leading-none ${valueTone[tone]}`}>{value}</div>
       <div className="mt-4">
-        <ProgressBar value={progress} tone={tone} />
+        <ProgressBar value={progress} tone={tone} label={`${label} zone share`} />
       </div>
     </div>
   )
@@ -200,6 +202,7 @@ function Inventry() {
 }
 
 function MachineCycleTimeChart({ points }) {
+  const [activePoint, setActivePoint] = useState(null)
   const width = 1180
   const height = 230
   const padding = { left: 54, right: 18, top: 22, bottom: 34 }
@@ -230,7 +233,13 @@ function MachineCycleTimeChart({ points }) {
   const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
 
   return (
-    <svg className="mt-4 h-[220px] w-full overflow-visible sm:h-[240px]" viewBox={`0 0 ${width} ${height}`} role="img">
+    <svg
+      className="mt-4 h-[220px] w-full overflow-visible sm:h-[240px]"
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label="Machine cycle-time log chart"
+      onMouseLeave={() => setActivePoint(null)}
+    >
       <defs>
         <linearGradient id="cycleFill" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
@@ -254,8 +263,42 @@ function MachineCycleTimeChart({ points }) {
       <path d={areaPath} fill="url(#cycleFill)" />
       <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
       {coords.map((point) => (
-        <circle key={point.part} cx={point.x} cy={point.y} r="3.2" fill="#2563eb" />
+        <circle
+          key={point.part}
+          cx={point.x}
+          cy={point.y}
+          r={activePoint?.title === point.part ? '5.5' : '3.2'}
+          fill="#2563eb"
+          onBlur={() => setActivePoint(null)}
+          onFocus={() =>
+            setActivePoint({
+              title: point.part,
+              value: `${point.minutes} min cycle time`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          onMouseEnter={() =>
+            setActivePoint({
+              title: point.part,
+              value: `${point.minutes} min cycle time`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          tabIndex={0}
+        />
       ))}
+      {activePoint ? (
+        <SvgChartTooltip
+          title={activePoint.title}
+          value={activePoint.value}
+          viewBoxWidth={width}
+          x={activePoint.x}
+          y={activePoint.y}
+          width={170}
+        />
+      ) : null}
       {coords.map((point) => (
         <text key={`${point.part}-label`} x={point.x} y={height - 7} textAnchor="middle" className="fill-slate-500 text-[10px]">
           {point.part}

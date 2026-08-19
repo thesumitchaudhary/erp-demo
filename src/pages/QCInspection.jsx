@@ -1,9 +1,12 @@
+import { useState } from "react";
+
 import {
   AnimatedKpiValue,
   DashboardShell,
   KpiGrid,
   PageHeader,
   StatusBadge,
+  SvgChartTooltip,
 } from "@/components/erp-dashboard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -325,6 +328,7 @@ function QueueNumber({ value }) {
 }
 
 function RightFirstTimeTrendChart({ points }) {
+  const [activePoint, setActivePoint] = useState(null);
   const width = 640;
   const height = 246;
   const padding = { left: 58, right: 18, top: 16, bottom: 30 };
@@ -354,6 +358,7 @@ function RightFirstTimeTrendChart({ points }) {
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       aria-label="Right-first-time percentage trend from March to August"
+      onMouseLeave={() => setActivePoint(null)}
     >
       <defs>
         <linearGradient id="rft-area" x1="0" x2="0" y1="0" y2="1">
@@ -413,7 +418,30 @@ function RightFirstTimeTrendChart({ points }) {
 
       {coordinates.map((point) => (
         <g key={point.month}>
-          <circle cx={point.x} cy={point.y} r="6.5" fill="#0f9a8f" />
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r={activePoint?.title === point.month ? "8" : "6.5"}
+            fill="#0f9a8f"
+            onBlur={() => setActivePoint(null)}
+            onFocus={() =>
+              setActivePoint({
+                title: point.month,
+                value: `${point.value}% right-first-time`,
+                x: point.x,
+                y: point.y,
+              })
+            }
+            onMouseEnter={() =>
+              setActivePoint({
+                title: point.month,
+                value: `${point.value}% right-first-time`,
+                x: point.x,
+                y: point.y,
+              })
+            }
+            tabIndex={0}
+          />
           <text
             x={point.x}
             y={height - 12}
@@ -424,6 +452,16 @@ function RightFirstTimeTrendChart({ points }) {
           </text>
         </g>
       ))}
+      {activePoint ? (
+        <SvgChartTooltip
+          title={activePoint.title}
+          value={activePoint.value}
+          viewBoxWidth={width}
+          x={activePoint.x}
+          y={activePoint.y}
+          width={190}
+        />
+      ) : null}
     </svg>
   );
 }

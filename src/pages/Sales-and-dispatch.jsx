@@ -1,10 +1,14 @@
+import { useState } from 'react'
+
 import {
   AnimatedKpiValue,
+  ChartHoverTooltip,
   DashboardCard,
   DashboardShell,
   KpiGrid,
   PageHeader,
   StatusBadge,
+  SvgChartTooltip,
 } from '@/components/erp-dashboard'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -198,6 +202,7 @@ function SalesActionButton({ kind, children }) {
 }
 
 function SalesTrendChart({ points }) {
+  const [activePoint, setActivePoint] = useState(null)
   const width = 720
   const height = 220
   const padding = { left: 44, right: 20, top: 12, bottom: 32 }
@@ -215,7 +220,13 @@ function SalesTrendChart({ points }) {
   const areaPath = `${linePath} L ${coords.at(-1).x} ${height - padding.bottom} L ${coords[0].x} ${height - padding.bottom} Z`
 
   return (
-    <svg className="mt-1 h-[200px] w-full sm:h-[220px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Sales trend chart">
+    <svg
+      className="mt-1 h-[200px] w-full sm:h-[220px]"
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label="Sales trend chart"
+      onMouseLeave={() => setActivePoint(null)}
+    >
       <defs>
         <linearGradient id="salesTrendFill" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor="#2563eb" stopOpacity="0.18" />
@@ -235,8 +246,42 @@ function SalesTrendChart({ points }) {
       <path d={areaPath} fill="url(#salesTrendFill)" />
       <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
       {coords.map((point) => (
-        <circle key={point.month} cx={point.x} cy={point.y} r="5" fill="#2563eb" />
+        <circle
+          key={point.month}
+          cx={point.x}
+          cy={point.y}
+          r={activePoint?.title === point.month ? '7' : '5'}
+          fill="#2563eb"
+          onBlur={() => setActivePoint(null)}
+          onFocus={() =>
+            setActivePoint({
+              title: point.month,
+              value: `Rs. ${point.value}L sales value`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          onMouseEnter={() =>
+            setActivePoint({
+              title: point.month,
+              value: `Rs. ${point.value}L sales value`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          tabIndex={0}
+        />
       ))}
+      {activePoint ? (
+        <SvgChartTooltip
+          title={activePoint.title}
+          value={activePoint.value}
+          viewBoxWidth={width}
+          x={activePoint.x}
+          y={activePoint.y}
+          width={164}
+        />
+      ) : null}
       <line x1={padding.left} x2={width - padding.right} y1={height - padding.bottom} y2={height - padding.bottom} stroke="#d1d5db" />
       {coords.map((point) => (
         <text key={point.month} x={point.x} y={height - 8} textAnchor="middle" className="fill-slate-500 text-[12px]">
@@ -248,6 +293,7 @@ function SalesTrendChart({ points }) {
 }
 
 function OrderStatusDonut({ items }) {
+  const [activeItem, setActiveItem] = useState(null)
   const total = items.reduce((sum, item) => sum + item.value, 0)
   const segments = items.reduce(
     (result, item) => {
@@ -261,7 +307,17 @@ function OrderStatusDonut({ items }) {
   ).items
 
   return (
-    <div className="flex h-[200px] flex-col items-center justify-center sm:h-[220px]">
+    <div
+      className="relative flex h-[200px] flex-col items-center justify-center sm:h-[220px]"
+      onMouseLeave={() => setActiveItem(null)}
+    >
+      {activeItem ? (
+        <ChartHoverTooltip
+          title={activeItem.label}
+          value={`${activeItem.value}% of orders`}
+          className="right-3 top-3"
+        />
+      ) : null}
       <svg className="h-[160px] w-[160px]" viewBox="0 0 120 120" role="img" aria-label="Order status split donut chart">
         {segments.map((item) => (
           <circle
@@ -276,6 +332,11 @@ function OrderStatusDonut({ items }) {
             strokeDashoffset={item.offset}
             pathLength="100"
             transform="rotate(-90 60 60)"
+            opacity={activeItem && activeItem.label !== item.label ? '0.42' : '1'}
+            onBlur={() => setActiveItem(null)}
+            onFocus={() => setActiveItem(item)}
+            onMouseEnter={() => setActiveItem(item)}
+            tabIndex={0}
           />
         ))}
         <circle cx="60" cy="60" r="27" fill="white" />
@@ -283,7 +344,14 @@ function OrderStatusDonut({ items }) {
 
       <div className="mt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-500">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center gap-2">
+          <div
+            key={item.label}
+            className="flex items-center gap-2"
+            onBlur={() => setActiveItem(null)}
+            onFocus={() => setActiveItem(item)}
+            onMouseEnter={() => setActiveItem(item)}
+            tabIndex={0}
+          >
             <span className="h-3 w-3 shrink-0" style={{ backgroundColor: item.color }} />
             <span>{item.label}</span>
           </div>

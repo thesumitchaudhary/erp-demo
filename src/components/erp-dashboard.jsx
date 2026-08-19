@@ -1,17 +1,26 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Boxes,
+  Building2,
   Check,
+  Clock,
+  ChevronDown,
   Factory,
   FlaskConical,
   Gauge,
   Link2,
+  LogOut,
+  Mail,
+  Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
+  ShieldCheck,
   ShoppingCart,
   TrendingUp,
+  User,
+  X,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +32,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Brand from "../images/Brand.png";
@@ -34,54 +52,54 @@ const modules = [
     label: "Purchase & Inward",
     href: "/purchase-and-inward",
     icon: ShoppingCart,
-    title: "Purchase & Raw Material Inward",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "Forging blanks, castings and bar stock purchase with incoming dimensional check",
+      "Enterprise Resource Planning Suite",
   },
   {
     key: "production",
     label: "CNC Machining",
     href: "/cnc-machining",
     icon: Factory,
-    title: "CNC Machining & Production",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "Job/work order tracking, machine allocation and cycle-time monitoring",
+      "Enterprise Resource Planning Suite",
   },
   {
     key: "qc",
     label: "QC & Inspection",
     href: "/qc-inspection",
     icon: FlaskConical,
-    title: "QC & Inspection",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "CMM dimensional inspection, in-process gauge checks and final inspection report",
+      "Enterprise Resource Planning Suite",
   },
   {
     key: "inventory",
     label: "Inventory",
     href: "/inventory",
     icon: Boxes,
-    title: "Inventory",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "WIP by stage, finished goods by part number, and tooling/fixture inventory",
+      "Enterprise Resource Planning Suite",
   },
   {
     key: "sales",
     label: "Sales & Dispatch",
     href: "/sales-dispatch",
     icon: TrendingUp,
-    title: "Sales & Dispatch",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "OEM/Tier-1 order fulfilment, inspection report attached, GST invoicing and e-way bill",
+      "Enterprise Resource Planning Suite",
   },
   {
     key: "integrations",
     label: "Integrations & APIs",
     href: "/integrations",
     icon: Link2,
-    title: "Integrations & APIs",
+    title: "Prakshal Diesel ERP",
     subtitle:
-      "The system doesn't work in isolation - here's what we'd connect it to",
+      "Enterprise Resource Planning Suite",
   },
 ];
 
@@ -106,6 +124,15 @@ const badgeVariantByTone = {
 };
 
 const DASHBOARD_NAV_STORAGE_KEY = "prakshal-dashboard-nav-open";
+
+const adminProfile = {
+  name: "Super Admin",
+  role: "Full ERP Access",
+  email: "admin@prakshalinfotech.com",
+  company: "Prakshal Infotech",
+  workspace: "Diesel Engine Components ERP",
+  initials: "SA",
+};
 
 function useClock() {
   const [time, setTime] = useState(() => new Date());
@@ -170,6 +197,80 @@ function DashboardIconNav({ activeKey }) {
   );
 }
 
+function AdminProfileDropdown({ onLogout }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            className="flex h-7 min-w-0 items-center gap-1 rounded-md bg-teal-600 px-1.5 text-[10px] font-bold text-white transition-colors hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+          />
+        }
+      >
+        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-white/15 sm:h-4.5 sm:w-4.5">
+          <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+        </span>
+        <span className="max-w-[74px] truncate sm:max-w-28">
+          {adminProfile.name}
+        </span>
+        <ChevronDown className="h-2.5 w-2.5 shrink-0 text-white/75 sm:h-3 sm:w-3" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className="w-72 rounded-md p-2"
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="p-0 font-normal">
+            <div className="flex items-center gap-3 rounded-md bg-slate-50 p-3 text-left">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-teal-600 text-xs font-bold text-white">
+                {adminProfile.initials}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-teal-700">
+                  {adminProfile.name}
+                </p>
+                <p className="truncate text-xs text-slate-500">
+                  {adminProfile.role}
+                </p>
+              </div>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        <div className="space-y-1 px-1 py-1">
+          <div className="flex items-start gap-2 rounded-md px-2 py-1.5 text-xs text-slate-600">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            <span className="min-w-0 truncate">{adminProfile.email}</span>
+          </div>
+          <div className="flex items-start gap-2 rounded-md px-2 py-1.5 text-xs text-slate-600">
+            <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            <span className="min-w-0 truncate">{adminProfile.company}</span>
+          </div>
+          <div className="flex items-start gap-2 rounded-md px-2 py-1.5 text-xs text-slate-600">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
+            <span className="min-w-0 truncate">{adminProfile.workspace}</span>
+          </div>
+        </div>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={onLogout}
+          className="cursor-pointer px-2 py-2 text-xs font-medium"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function getInitialNavOpen() {
   if (typeof window === "undefined") {
     return true;
@@ -194,6 +295,7 @@ function getInitialNavOpen() {
 
 export function DashboardShell({ activeKey, children }) {
   const clock = useClock();
+  const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(getInitialNavOpen);
   const activeModule =
     modules.find((item) => item.key === activeKey) ?? modules[0];
@@ -213,6 +315,10 @@ export function DashboardShell({ activeKey, children }) {
     }
   };
 
+  const handleLogout = () => {
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-[#f6f7f9] text-slate-950">
       <div className="relative flex h-full min-w-0">
@@ -225,20 +331,31 @@ export function DashboardShell({ activeKey, children }) {
               onClick={() => setNavOpen(false)}
             />
             <aside className="fixed inset-y-0 left-0 z-40 flex h-full w-[236px] shrink-0 flex-col border-r border-slate-200 bg-white shadow-xl lg:static lg:z-auto lg:shadow-none">
-              <NavLink
-                to="/"
-                onClick={closeMobileNav}
-                className="flex flex-col items-start gap-1 border-b border-slate-200 px-5 py-5"
-              >
-                <img
-                  src={Brand}
-                  alt="Prakshal logo"
-                  className="h-11 max-w-full object-contain"
-                />
-                <p className="max-w-full truncate text-[10px] text-slate-400">
-                  Diesel Engine Components ERP
-                </p>
-              </NavLink>
+              <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-5">
+                <NavLink
+                  to="/"
+                  onClick={closeMobileNav}
+                  className="flex min-w-0 flex-1 flex-col items-start gap-1"
+                >
+                  <img
+                    src={Brand}
+                    alt="Prakshal logo"
+                    className="h-11 max-w-full object-contain"
+                  />
+                  <p className="max-w-full truncate text-[10px] text-slate-400">
+                    Diesel Engine Components ERP
+                  </p>
+                </NavLink>
+                <button
+                  type="button"
+                  aria-label="Close navigation menu"
+                  title="Close navigation menu"
+                  onClick={() => setNavOpen(false)}
+                  className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 lg:hidden"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
               <div className="px-3 py-4">
                 <div className="px-3 pb-2 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
@@ -261,7 +378,7 @@ export function DashboardShell({ activeKey, children }) {
                     navOpen ? "Close navigation menu" : "Open navigation menu"
                   }
                   onClick={() => setNavOpen((open) => !open)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
+                  className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 lg:flex"
                 >
                   <SidebarToggleIcon className="h-4 w-4" />
                 </button>
@@ -300,34 +417,36 @@ export function DashboardShell({ activeKey, children }) {
               </div>
             </aside>
 
-            <button
-              type="button"
-              aria-label="Open navigation menu"
-              aria-expanded={navOpen}
-              title="Open navigation menu"
-              onClick={() => setNavOpen(true)}
-              className="fixed bottom-5 left-5 z-30 flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-lg transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 lg:hidden"
-            >
-              <PanelLeftOpen className="h-4 w-4" />
-            </button>
           </>
         )}
 
         <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
           <header className="z-20 shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur">
-            <div className="flex flex-col gap-3 px-4 py-4 sm:px-6 xl:flex-row xl:items-center">
-              <div className="flex min-w-0 items-start gap-3">
-                <div className="min-w-0">
-                  <h1 className="truncate text-[17px] font-semibold leading-tight text-slate-950">
+            <div className="flex flex-wrap items-start gap-3 px-4 py-4 sm:px-6 xl:flex-nowrap xl:items-center">
+              <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
+                {!navOpen && (
+                  <button
+                    type="button"
+                    aria-label="Open navigation menu"
+                    aria-expanded={navOpen}
+                    title="Open navigation menu"
+                    onClick={() => setNavOpen(true)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 lg:hidden"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </button>
+                )}
+                <div className="min-w-0 flex-1">
+                  <h1 className="truncate text-[15px] font-semibold leading-tight text-slate-950 sm:text-[17px]">
                     {activeModule.title}
                   </h1>
-                  <p className="mt-1 max-w-2xl text-xs whitespace-nowrap leading-relaxed text-slate-500">
+                  <p className="mt-1 max-w-2xl truncate text-[11px] leading-relaxed text-slate-500 sm:text-xs">
                     {activeModule.subtitle}
                   </p>
                 </div>
               </div>
 
-              <div className="relative w-full max-w-md xl:ml-auto">
+              <div className="relative hidden w-90 max-w-md lg:block xl:ml-auto">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   aria-label="Search ERP records"
@@ -336,17 +455,15 @@ export function DashboardShell({ activeKey, children }) {
                 />
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3">
                 <Badge
                   variant="outline"
                   className="hidden gap-2 rounded-full border-slate-200 bg-slate-50 w-20 px-2 py-1.5 text-slate-600 sm:inline-flex"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse bg-green-600" />
+                  <Clock />
                   {clock}
                 </Badge>
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-600 text-xs font-bold text-white">
-                  PI
-                </div>
+                <AdminProfileDropdown onLogout={handleLogout} />
               </div>
             </div>
           </header>
@@ -528,6 +645,69 @@ export function StatusBadge({ tone = "slate", children, className }) {
   );
 }
 
+export function ChartHoverTooltip({ title, value, className }) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute z-20 rounded-md bg-slate-950 px-3 py-2 text-left text-white shadow-lg",
+        className,
+      )}
+    >
+      <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-300">
+        {title}
+      </div>
+      <div className="mt-0.5 whitespace-nowrap text-xs font-bold">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+export function SvgChartTooltip({
+  title,
+  value,
+  x,
+  y,
+  viewBoxWidth,
+  width = 150,
+}) {
+  const height = 48;
+  const padding = 8;
+  const tooltipX = Math.min(
+    Math.max(x - width / 2, padding),
+    viewBoxWidth - width - padding,
+  );
+  const tooltipY = y > height + 18 ? y - height - 14 : y + 14;
+
+  return (
+    <g pointerEvents="none">
+      <rect
+        x={tooltipX}
+        y={tooltipY}
+        width={width}
+        height={height}
+        rx="8"
+        fill="#0f172a"
+        opacity="0.96"
+      />
+      <text
+        x={tooltipX + 12}
+        y={tooltipY + 19}
+        className="fill-slate-300 text-[10px] font-semibold uppercase"
+      >
+        {title}
+      </text>
+      <text
+        x={tooltipX + 12}
+        y={tooltipY + 36}
+        className="fill-white text-[12px] font-bold"
+      >
+        {value}
+      </text>
+    </g>
+  );
+}
+
 export function DataTable({ columns, rows }) {
   return (
     <div className="overflow-x-auto">
@@ -619,7 +799,7 @@ export function InfoNote({ tone = "teal", children, className }) {
   );
 }
 
-export function ProgressBar({ value, tone = "teal" }) {
+export function ProgressBar({ value, tone = "teal", label = "Progress" }) {
   const colors = {
     teal: "bg-teal-500",
     blue: "bg-blue-500",
@@ -630,7 +810,10 @@ export function ProgressBar({ value, tone = "teal" }) {
   };
 
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+    <div
+      className="h-1.5 overflow-hidden rounded-full bg-slate-100"
+      title={`${label}: ${value}%`}
+    >
       <div
         className={cn("h-full rounded-full", colors[tone] ?? colors.teal)}
         style={{ width: `${value}%` }}
@@ -640,6 +823,7 @@ export function ProgressBar({ value, tone = "teal" }) {
 }
 
 export function MiniBarChart({ items, tone = "teal" }) {
+  const [activeItem, setActiveItem] = useState(null);
   const colors = {
     teal: "bg-teal-500",
     blue: "bg-blue-500",
@@ -650,11 +834,25 @@ export function MiniBarChart({ items, tone = "teal" }) {
   };
 
   return (
-    <div className="grid h-[168px] grid-cols-5 items-end gap-4 border-b border-l border-slate-100 px-4 pb-5">
+    <div
+      className="relative grid h-[168px] grid-cols-5 items-end gap-4 border-b border-l border-slate-100 px-4 pb-5"
+      onMouseLeave={() => setActiveItem(null)}
+    >
+      {activeItem ? (
+        <ChartHoverTooltip
+          title={activeItem.label}
+          value={`${activeItem.value}%`}
+          className="right-2 top-2"
+        />
+      ) : null}
       {items.map((item) => (
         <div
           key={item.label}
           className="flex h-full flex-col items-center justify-end gap-2"
+          onBlur={() => setActiveItem(null)}
+          onFocus={() => setActiveItem(item)}
+          onMouseEnter={() => setActiveItem(item)}
+          tabIndex={0}
         >
           <div className="flex w-full max-w-11 flex-1 items-end rounded-t bg-slate-100">
             <div
@@ -677,6 +875,7 @@ export function MiniLineChart({
   stroke = "#0d9488",
   targetStroke = "#2563eb",
 }) {
+  const [activePoint, setActivePoint] = useState(null);
   const polyline = useMemo(
     () => points.map((point) => `${point.x},${point.y}`).join(" "),
     [points],
@@ -688,6 +887,7 @@ export function MiniLineChart({
       viewBox="0 0 420 170"
       role="img"
       aria-label="Trend chart"
+      onMouseLeave={() => setActivePoint(null)}
     >
       <path
         d="M24 20H408M24 58H408M24 96H408M24 134H408"
@@ -712,15 +912,44 @@ export function MiniLineChart({
         strokeLinecap="round"
         strokeWidth="2"
       />
-      {points.map((point) => (
+      {points.map((point, index) => (
         <circle
           key={`${point.x}-${point.y}`}
           cx={point.x}
           cy={point.y}
-          r="3.5"
+          r={activePoint?.key === `${point.x}-${point.y}` ? "5" : "3.5"}
           fill={stroke}
+          onBlur={() => setActivePoint(null)}
+          onFocus={() =>
+            setActivePoint({
+              key: `${point.x}-${point.y}`,
+              title: point.label ?? `Point ${index + 1}`,
+              value: point.value ?? `x ${point.x}, y ${point.y}`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          onMouseEnter={() =>
+            setActivePoint({
+              key: `${point.x}-${point.y}`,
+              title: point.label ?? `Point ${index + 1}`,
+              value: point.value ?? `x ${point.x}, y ${point.y}`,
+              x: point.x,
+              y: point.y,
+            })
+          }
+          tabIndex={0}
         />
       ))}
+      {activePoint ? (
+        <SvgChartTooltip
+          title={activePoint.title}
+          value={activePoint.value}
+          viewBoxWidth={420}
+          x={activePoint.x}
+          y={activePoint.y}
+        />
+      ) : null}
       <text x="26" y="158" className="fill-slate-400 text-[10px]">
         Mon
       </text>
