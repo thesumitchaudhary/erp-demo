@@ -320,7 +320,10 @@ export function DashboardShell({ activeKey, children }) {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f6f7f9] text-slate-950">
+    <div
+      className="h-screen overflow-hidden bg-[#f6f7f9] text-slate-950"
+      style={{ height: "100dvh" }}
+    >
       <div className="relative flex h-full min-w-0">
         {navOpen ? (
           <>
@@ -468,7 +471,7 @@ export function DashboardShell({ activeKey, children }) {
             </div>
           </header>
 
-          <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+          <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
             {children}
           </div>
         </main>

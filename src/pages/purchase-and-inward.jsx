@@ -157,7 +157,7 @@ function PurchaseAndInward() {
 
   return (
     <DashboardShell activeKey="purchase">
-      <div className="purchase-inward-page pb-8 sm:pb-0">
+      <div className="purchase-inward-page">
         <PageHeader
           title="Purchase Orders and Raw Material Inward"
           description="Forging blanks, castings and bar stock purchase with incoming dimensional check"
