@@ -157,7 +157,7 @@ function PurchaseAndInward() {
 
   return (
     <DashboardShell activeKey="purchase">
-      <div className="purchase-inward-page">
+      <div className="purchase-inward-page pb-8 sm:pb-0">
         <PageHeader
           title="Purchase Orders and Raw Material Inward"
           description="Forging blanks, castings and bar stock purchase with incoming dimensional check"
@@ -181,8 +181,56 @@ function PurchaseAndInward() {
             </Button>
           }
         >
-          <div className="overflow-x-auto pb-1 md:overflow-x-visible md:pb-0">
-            <table className="w-full min-w-[640px] table-fixed text-left text-[12px] md:min-w-0">
+          <div className="grid gap-3 md:hidden">
+            {purchaseOrders.map((order) => (
+              <div
+                key={order.po}
+                className="min-w-0 rounded-md border border-slate-200 bg-slate-50/70 p-3"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                      PO No.
+                    </div>
+                    <div className="mt-1 text-[15px] font-bold leading-none text-slate-950">
+                      {order.po}
+                    </div>
+                  </div>
+                  <StatusBadge tone={order.tone} className="shrink-0 px-2 py-1 text-[9px] font-semibold">
+                    {order.status}
+                  </StatusBadge>
+                </div>
+
+                <div className="mt-3 grid min-w-0 grid-cols-[76px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[11px] leading-tight">
+                  <div className="font-bold uppercase tracking-[0.08em] text-slate-400">
+                    Vendor
+                  </div>
+                  <div className="min-w-0 font-semibold text-slate-800">
+                    {order.vendor}
+                  </div>
+                  <div className="font-bold uppercase tracking-[0.08em] text-slate-400">
+                    Item
+                  </div>
+                  <div className="min-w-0 text-slate-700">
+                    {order.item}
+                  </div>
+                  <div className="font-bold uppercase tracking-[0.08em] text-slate-400">
+                    Qty
+                  </div>
+                  <div className="min-w-0 text-slate-500">
+                    {order.qty}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <PurchaseOrderAction order={order} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden pb-1 md:block md:overflow-x-visible md:pb-0">
+            <table className="w-full table-fixed text-left text-[12px]">
               <colgroup>
                 <col className="w-[10%]" />
                 <col className="w-[21%]" />
@@ -222,26 +270,7 @@ function PurchaseAndInward() {
                       </StatusBadge>
                     </td>
                     <td className="px-1.5 py-3.5 align-middle">
-                      {order.action === 'Completed' ? (
-                        <span className="block max-w-full text-xs font-medium leading-tight text-slate-400">Completed</span>
-                      ) : order.action === 'Send for Approval' ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-auto min-h-8 max-w-full whitespace-normal rounded-md border-slate-200 bg-white px-2 text-center text-[10px] font-semibold leading-tight text-slate-950 hover:bg-slate-50"
-                        >
-                          {order.action}
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-8 max-w-full rounded-md bg-teal-600 px-2.5 text-[10px] font-semibold text-white hover:bg-teal-700"
-                        >
-                          {order.action}
-                        </Button>
-                      )}
+                      <PurchaseOrderAction order={order} />
                     </td>
                   </tr> 
                 ))}
@@ -276,32 +305,63 @@ function PurchaseAndInward() {
 
         <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
           <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-5 xl:min-h-[260px]">
-            <div className="text-[14px] font-bold leading-tight text-slate-950">Purchase Value Trend</div>
+            <div className="text-[18px] font-bold leading-tight text-slate-950">Purchase Value Trend</div>
             <PurchaseValueTrendChart points={purchaseTrend} />
           </div>
 
           <div className="min-w-0 rounded-md border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-6 xl:min-h-[260px]">
             <div className="text-[18px] font-bold leading-tight text-slate-950">Vendor Reliability</div>
-            <div className="mt-1 min-w-0 max-w-full overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-0">
-            <table className="w-full min-w-[440px] table-fixed text-left text-[12px] sm:min-w-0">
+            <div className="mt-3 grid gap-3 sm:hidden">
+              {vendorReliability.map((vendor) => (
+                <div
+                  key={vendor.vendor}
+                  className="rounded-md border border-slate-200 bg-slate-50/70 p-3"
+                >
+                  <div className="text-[12px] font-semibold leading-snug text-slate-900">
+                    {vendor.vendor}
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="min-w-0 rounded-md bg-white px-3 py-2">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                        Material
+                      </div>
+                      <div className="mt-1 text-[11px] font-medium text-slate-600">
+                        {vendor.material}
+                      </div>
+                    </div>
+                    <div className="min-w-0 rounded-md bg-white px-3 py-2">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                        On-time
+                      </div>
+                      <div className={cn('mt-1 text-[12px] font-bold', scoreTone(vendor.tone))}>
+                        {vendor.onTime}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-2 hidden min-w-0 max-w-full pb-1 sm:block sm:pb-0">
+            <table className="w-full table-fixed text-left text-[12px]">
               <colgroup>
-                <col className="w-[56%]" />
-                <col className="w-[22%]" />
-                <col className="w-[22%]" />
+                <col className="w-[54%]" />
+                <col className="w-[23%]" />
+                <col className="w-[23%]" />
               </colgroup>
               <thead className="border-b border-slate-200 text-[11px] font-bold uppercase tracking-[0.06em] text-slate-400">
                 <tr>
-                  <th className="pb-2">Vendor</th>
-                  <th className="pb-2">Material</th>
-                  <th className="pb-2">On-time %</th>
+                  <th className="pb-2 pr-2">Vendor</th>
+                  <th className="pb-2 pr-2">Material</th>
+                  <th className="pb-2 whitespace-nowrap">On-time %</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {vendorReliability.map((vendor) => (
                   <tr key={vendor.vendor}>
-                    <td className="py-3.5 pr-4 font-medium text-slate-900">{vendor.vendor}</td>
-                    <td className="py-3.5 pr-4 text-slate-500">{vendor.material}</td>
-                    <td className={cn('py-3.5 font-bold', scoreTone(vendor.tone))}>{vendor.onTime}</td>
+                    <td className="py-3 pr-2 font-medium leading-tight text-slate-900 sm:py-3.5">{vendor.vendor}</td>
+                    <td className="py-3 pr-2 leading-tight text-slate-500 sm:py-3.5">{vendor.material}</td>
+                    <td className={cn('py-3 font-bold leading-tight sm:py-3.5', scoreTone(vendor.tone))}>{vendor.onTime}</td>
                   </tr>
                 ))}
               </tbody>
@@ -330,6 +390,39 @@ function PONumber({ value }) {
       <br />
       {number}
     </span>
+  )
+}
+
+function PurchaseOrderAction({ order }) {
+  if (order.action === 'Completed') {
+    return (
+      <span className="block max-w-full text-xs font-medium leading-tight text-slate-400">
+        Completed
+      </span>
+    )
+  }
+
+  if (order.action === 'Send for Approval') {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-auto min-h-8 w-full max-w-full whitespace-normal rounded-md border-slate-200 bg-white px-2 text-center text-[10px] font-semibold leading-tight text-slate-950 hover:bg-slate-50 md:w-auto"
+      >
+        {order.action}
+      </Button>
+    )
+  }
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      className="h-8 w-full max-w-full rounded-md bg-teal-600 px-2.5 text-[10px] font-semibold text-white hover:bg-teal-700 md:w-auto"
+    >
+      {order.action}
+    </Button>
   )
 }
 
@@ -452,33 +545,57 @@ function RawMaterialFlow({ steps }) {
   const finalStep = steps[4]
 
   return (
-    <div className="overflow-x-auto pb-1 md:overflow-x-visible md:pb-0">
-      <div className="min-w-[520px] px-1 pt-1 md:min-w-0">
-      <div
-        className="grid items-start"
-        style={{
-          gridTemplateColumns:
-            'minmax(56px, 80px) minmax(12px, 1fr) minmax(56px, 80px) minmax(12px, 1fr) minmax(72px, 104px) minmax(12px, 1fr)',
-        }}
-      >
-        {topSteps.map((step) => (
-          <Fragment key={step.label}>
-            <FlowStep step={step} />
-            <FlowLine tone="active" />
-          </Fragment>
-        ))}
+    <>
+      <div className="md:hidden">
+        <div
+          className="grid items-start px-0.5 pt-1"
+          style={{
+            gridTemplateColumns:
+              'minmax(34px, 1fr) minmax(12px, 0.65fr) minmax(34px, 1fr) minmax(12px, 0.65fr) minmax(34px, 1fr) minmax(12px, 0.65fr) minmax(34px, 1fr) minmax(12px, 0.65fr) minmax(34px, 1fr)',
+          }}
+        >
+          {steps.map((step, index) => (
+            <Fragment key={step.label}>
+              <FlowStep compact step={step} />
+              {index < steps.length - 1 ? (
+                <FlowLine
+                  className="mt-4"
+                  tone={steps[index + 1].state === 'upcoming' ? 'muted' : 'active'}
+                />
+              ) : null}
+            </Fragment>
+          ))}
+        </div>
       </div>
 
-      <div
-        className="mt-5 grid items-start"
-        style={{ gridTemplateColumns: 'minmax(64px, 112px) minmax(24px, 1fr) minmax(76px, 112px)' }}
-      >
-        <FlowStep step={currentStep} />
-        <FlowLine className="mt-5" />
-        <FlowStep step={finalStep} />
+      <div className="hidden pb-1 md:block">
+        <div className="px-1 pt-1">
+          <div
+            className="grid items-start"
+            style={{
+              gridTemplateColumns:
+                'minmax(56px, 80px) minmax(12px, 1fr) minmax(56px, 80px) minmax(12px, 1fr) minmax(72px, 104px) minmax(12px, 1fr)',
+            }}
+          >
+            {topSteps.map((step) => (
+              <Fragment key={step.label}>
+                <FlowStep step={step} />
+                <FlowLine tone="active" />
+              </Fragment>
+            ))}
+          </div>
+
+          <div
+            className="mt-5 grid items-start"
+            style={{ gridTemplateColumns: 'minmax(64px, 112px) minmax(24px, 1fr) minmax(76px, 112px)' }}
+          >
+            <FlowStep step={currentStep} />
+            <FlowLine className="mt-5" />
+            <FlowStep step={finalStep} />
+          </div>
+        </div>
       </div>
-      </div>
-    </div>
+    </>
   )
 }
 
@@ -486,115 +603,151 @@ function FlowLine({ tone = 'muted', className }) {
   return <div className={cn('mt-5 h-0.5', tone === 'active' ? 'bg-teal-600' : 'bg-slate-200', className)} />
 }
 
-function FlowStep({ step }) {
+function FlowStep({ step, compact = false }) {
   return (
     <div className="flex min-w-0 flex-col items-center text-center">
       <div
         className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold',
+          'flex items-center justify-center rounded-full font-bold',
+          compact ? 'h-8 w-8 text-[11px]' : 'h-10 w-10 text-xs',
           step.state === 'done' && 'bg-teal-600 text-white',
           step.state === 'current' && 'bg-orange-500 text-white',
           step.state === 'upcoming' && 'border-2 border-slate-300 bg-white text-slate-400',
         )}
       >
-        {step.state === 'done' ? <Check className="h-4 w-4" /> : step.number}
+        {step.state === 'done' ? <Check className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} /> : step.number}
       </div>
-      <span className="mt-2 max-w-[104px] text-[10px] font-semibold leading-tight text-slate-500">{step.label}</span>
+      <span
+        className={cn(
+          'font-semibold leading-tight text-slate-500',
+          compact ? 'mt-1.5 max-w-[58px] text-[8px]' : 'mt-2 max-w-[104px] text-[10px]',
+        )}
+      >
+        {step.label}
+      </span>
     </div>
   )
 }
 
 function PurchaseValueTrendChart({ points }) {
   const [activePoint, setActivePoint] = useState(null)
-  const width = 720
-  const height = 220
-  const padding = { left: 44, right: 20, top: 12, bottom: 32 }
-  const chartWidth = width - padding.left - padding.right
-  const chartHeight = height - padding.top - padding.bottom
-  const yValues = [0, 5, 10, 15, 20, 25, 30, 35, 40]
-  const barWidth = 34
-  const xStep = chartWidth / points.length
-  const yFor = (value) => padding.top + ((40 - value) / 40) * chartHeight
+  const renderChart = ({
+    width,
+    height,
+    padding,
+    yValues,
+    barWidth,
+    className,
+    tooltipWidth,
+  }) => {
+    const chartWidth = width - padding.left - padding.right
+    const chartHeight = height - padding.top - padding.bottom
+    const xStep = chartWidth / points.length
+    const yFor = (value) => padding.top + ((40 - value) / 40) * chartHeight
 
-  return (
-    <svg
-      className="mt-1 h-[200px] w-full sm:h-[220px]"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label="Purchase value trend chart"
-      onMouseLeave={() => setActivePoint(null)}
-    >
-      {yValues.map((value) => (
-        <g key={value}>
-          <line
-            x1={padding.left}
-            x2={width - padding.right}
-            y1={yFor(value)}
-            y2={yFor(value)}
-            stroke="#e5e7eb"
-          />
-          <text x={padding.left - 10} y={yFor(value) + 4} textAnchor="end" className="fill-slate-500 text-[11px]">
-            &#8377;{value}L
-          </text>
-        </g>
-      ))}
-
-      <line x1={padding.left} x2={padding.left} y1={padding.top} y2={height - padding.bottom} stroke="#d1d5db" />
-      <line x1={padding.left} x2={width - padding.right} y1={height - padding.bottom} y2={height - padding.bottom} stroke="#d1d5db" />
-
-      {points.map((point, index) => {
-        const x = padding.left + index * xStep + (xStep - barWidth) / 2
-        const y = yFor(point.value)
-        const barHeight = height - padding.bottom - y
-
-        return (
-          <g
-            key={point.month}
-            onBlur={() => setActivePoint(null)}
-            onFocus={() =>
-              setActivePoint({
-                title: point.month,
-                value: `Rs. ${point.value}L purchase value`,
-                x: x + barWidth / 2,
-                y,
-              })
-            }
-            onMouseEnter={() =>
-              setActivePoint({
-                title: point.month,
-                value: `Rs. ${point.value}L purchase value`,
-                x: x + barWidth / 2,
-                y,
-              })
-            }
-            tabIndex={0}
-          >
-            <rect
-              x={x}
-              y={y}
-              width={barWidth}
-              height={barHeight}
-              rx="6"
-              fill="#0f9a8f"
-              opacity={activePoint?.title === point.month ? '1' : '0.88'}
+    return (
+      <svg
+        className={className}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Purchase value trend chart"
+        onMouseLeave={() => setActivePoint(null)}
+      >
+        {yValues.map((value) => (
+          <g key={value}>
+            <line
+              x1={padding.left}
+              x2={width - padding.right}
+              y1={yFor(value)}
+              y2={yFor(value)}
+              stroke="#e5e7eb"
             />
-            <text x={x + barWidth / 2} y={height - 8} textAnchor="middle" className="fill-slate-500 text-[12px]">
-              {point.month}
+            <text x={padding.left - 10} y={yFor(value) + 4} textAnchor="end" className="fill-slate-500 text-[11px]">
+              &#8377;{value}L
             </text>
           </g>
-        )
+        ))}
+
+        <line x1={padding.left} x2={padding.left} y1={padding.top} y2={height - padding.bottom} stroke="#d1d5db" />
+        <line x1={padding.left} x2={width - padding.right} y1={height - padding.bottom} y2={height - padding.bottom} stroke="#d1d5db" />
+
+        {points.map((point, index) => {
+          const x = padding.left + index * xStep + (xStep - barWidth) / 2
+          const y = yFor(point.value)
+          const barHeight = height - padding.bottom - y
+
+          return (
+            <g
+              key={point.month}
+              onBlur={() => setActivePoint(null)}
+              onFocus={() =>
+                setActivePoint({
+                  title: point.month,
+                  value: `Rs. ${point.value}L purchase value`,
+                  x: x + barWidth / 2,
+                  y,
+                })
+              }
+              onMouseEnter={() =>
+                setActivePoint({
+                  title: point.month,
+                  value: `Rs. ${point.value}L purchase value`,
+                  x: x + barWidth / 2,
+                  y,
+                })
+              }
+              tabIndex={0}
+            >
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx="6"
+                fill="#0f9a8f"
+                opacity={activePoint?.title === point.month ? '1' : '0.88'}
+              />
+              <text x={x + barWidth / 2} y={height - 8} textAnchor="middle" className="fill-slate-500 text-[12px]">
+                {point.month}
+              </text>
+            </g>
+          )
+        })}
+        {activePoint ? (
+          <SvgChartTooltip
+            title={activePoint.title}
+            value={activePoint.value}
+            viewBoxWidth={width}
+            x={activePoint.x}
+            y={activePoint.y}
+            width={tooltipWidth}
+          />
+        ) : null}
+      </svg>
+    )
+  }
+
+  return (
+    <>
+      {renderChart({
+        width: 360,
+        height: 232,
+        padding: { left: 36, right: 12, top: 18, bottom: 36 },
+        yValues: [0, 10, 20, 30, 40],
+        barWidth: 24,
+        className: 'mt-3 h-[232px] w-full sm:hidden',
+        tooltipWidth: 158,
       })}
-      {activePoint ? (
-        <SvgChartTooltip
-          title={activePoint.title}
-          value={activePoint.value}
-          viewBoxWidth={width}
-          x={activePoint.x}
-          y={activePoint.y}
-          width={184}
-        />
-      ) : null}
-    </svg>
+      {renderChart({
+        width: 720,
+        height: 220,
+        padding: { left: 44, right: 20, top: 12, bottom: 32 },
+        yValues: [0, 5, 10, 15, 20, 25, 30, 35, 40],
+        barWidth: 34,
+        className: 'mt-1 hidden h-[220px] w-full sm:block',
+        tooltipWidth: 184,
+      })}
+    </>
   )
 }
 

@@ -164,8 +164,43 @@ function QCInspection() {
             </div>
           </div>
 
-          <div className="min-w-0 max-w-full overflow-x-auto pb-2 [scrollbar-color:#94a3b8_#e2e8f0] [scrollbar-width:thin] sm:overflow-x-visible sm:pb-1">
-            <table className="w-full min-w-[500px] table-fixed text-left text-[13px] sm:min-w-0">
+          <div className="grid gap-3 md:hidden">
+            {queue.map((item) => (
+              <article
+                key={item.job}
+                className={cn(
+                  "rounded-md border border-slate-200 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)]",
+                  item.highlighted ? "bg-slate-50" : "bg-white",
+                )}
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                      Job / Batch
+                    </div>
+                    <div className="mt-1 text-[15px] font-bold leading-none text-slate-950">
+                      {item.job}
+                    </div>
+                  </div>
+                  <StatusBadge tone={item.tone} className="shrink-0 px-2.5 py-1 text-[10px] font-semibold">
+                    {item.status}
+                  </StatusBadge>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <QueueDetail label="Product" value={item.product} />
+                  <QueueDetail label="Test Type" value={item.testType} />
+                </div>
+
+                <div className="mt-3">
+                  <QueueAction item={item} />
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden min-w-0 max-w-full pb-1 md:block">
+            <table className="w-full table-fixed text-left text-[13px]">
               <colgroup>
                 <col className="w-[16%]" />
                 <col className="w-[25%]" />
@@ -206,19 +241,7 @@ function QCInspection() {
                       </StatusBadge>
                     </td>
                     <td className="py-3 align-middle">
-                      <Button
-                        type="button"
-                        variant={item.actionVariant}
-                        size="sm"
-                        className={cn(
-                          "h-8 rounded-md px-3 text-[11px] font-semibold",
-                          item.actionVariant === "default"
-                            ? "bg-teal-600 text-white hover:bg-teal-700"
-                            : "border-slate-200 bg-white text-slate-950 hover:bg-slate-50",
-                        )}
-                      >
-                        {item.action}
-                      </Button>
+                      <QueueAction item={item} />
                     </td>
                   </tr>
                 ))}
@@ -252,8 +275,54 @@ function QCInspection() {
           </Button>
         </div>
 
-        <div className="overflow-x-auto pb-1">
-          <table className="w-full min-w-[920px] table-fixed text-left text-[13px]">
+        <div className="grid gap-3 md:hidden">
+          {ncrs.map((ncr) => (
+            <article
+              key={ncr.no}
+              className={cn(
+                "rounded-md border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)]",
+                ncr.overdue && "border-red-200 bg-red-50/40",
+              )}
+            >
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                    NCR No.
+                  </div>
+                  <div className="mt-1 text-[15px] font-bold leading-none text-slate-950">
+                    {ncr.no}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                    Due
+                  </div>
+                  <div className={cn("mt-1 text-[11px] font-bold leading-tight text-slate-500", ncr.overdue && "text-red-600")}>
+                    {ncr.due}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-md bg-slate-50 px-3 py-2">
+                <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                  Description
+                </div>
+                <div className="mt-1 text-[11px] font-medium leading-snug text-slate-800">
+                  {ncr.description}
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <NcrDetail label="Reference" value={ncr.reference} />
+                <NcrBadgeDetail label="Severity" tone={ncr.severityTone} value={ncr.severity} />
+                <NcrBadgeDetail label="Status" tone={ncr.statusTone} value={ncr.status} />
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="hidden pb-1 md:block md:overflow-x-auto xl:overflow-x-visible">
+          <table className="w-full min-w-[920px] table-fixed text-left text-[13px] xl:min-w-0">
             <colgroup>
               <col className="w-[10%]" />
               <col className="w-[45%]" />
@@ -327,142 +396,258 @@ function QueueNumber({ value }) {
   );
 }
 
+function QueueDetail({ label, value }) {
+  return (
+    <div className="min-w-0 rounded-md bg-slate-50 px-3 py-2">
+      <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </div>
+      <div className="mt-1 break-words text-[11px] font-medium leading-tight text-slate-700">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function QueueAction({ item }) {
+  return (
+    <Button
+      type="button"
+      variant={item.actionVariant}
+      size="sm"
+      className={cn(
+        "h-8 w-full max-w-full rounded-md px-3 text-[11px] font-semibold md:w-auto",
+        item.actionVariant === "default"
+          ? "bg-teal-600 text-white hover:bg-teal-700"
+          : "border-slate-200 bg-white text-slate-950 hover:bg-slate-50",
+      )}
+    >
+      {item.action}
+    </Button>
+  );
+}
+
+function NcrDetail({ label, value }) {
+  return (
+    <div className="min-w-0 rounded-md bg-slate-50 px-2 py-2">
+      <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </div>
+      <div className="mt-1 break-words text-[10px] font-semibold leading-tight text-slate-700">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function NcrBadgeDetail({ label, tone, value }) {
+  return (
+    <div className="min-w-0 rounded-md bg-slate-50 px-2 py-2">
+      <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </div>
+      <StatusBadge tone={tone} className="mt-1 max-w-full justify-center whitespace-normal px-1.5 py-1 text-center text-[9px] font-semibold leading-tight">
+        {value}
+      </StatusBadge>
+    </div>
+  );
+}
+
 function RightFirstTimeTrendChart({ points }) {
   const [activePoint, setActivePoint] = useState(null);
-  const width = 640;
-  const height = 246;
-  const padding = { left: 58, right: 18, top: 16, bottom: 30 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const yTicks = [100, 99, 98, 97, 96, 95, 94, 93, 92, 91, 90];
-  const yFor = (value) =>
-    padding.top + ((100 - value) / 10) * chartHeight;
-  const xFor = (index) =>
-    padding.left + (index / (points.length - 1)) * chartWidth;
 
-  const coordinates = points.map((point, index) => ({
-    ...point,
-    x: xFor(index),
-    y: yFor(point.value),
-  }));
-  const linePath = coordinates
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ");
-  const areaPath = `${linePath} L ${padding.left + chartWidth} ${
-    padding.top + chartHeight
-  } L ${padding.left} ${padding.top + chartHeight} Z`;
+  const renderChart = ({
+    width,
+    height,
+    padding,
+    minY,
+    maxY,
+    yTicks,
+    className,
+    gradientId,
+    lineWidth,
+    pointRadius,
+    activePointRadius,
+    monthLabelClassName,
+    showValues = false,
+    tooltipWidth,
+  }) => {
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    const yFor = (value) =>
+      padding.top + ((maxY - value) / (maxY - minY)) * chartHeight;
+    const xFor = (index) =>
+      padding.left + (index / (points.length - 1)) * chartWidth;
+    const coordinates = points.map((point, index) => ({
+      ...point,
+      x: xFor(index),
+      y: yFor(point.value),
+    }));
+    const linePath = coordinates
+      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+      .join(" ");
+    const areaPath = `${linePath} L ${padding.left + chartWidth} ${
+      padding.top + chartHeight
+    } L ${padding.left} ${padding.top + chartHeight} Z`;
 
-  return (
-    <svg
-      className="mt-4 block h-[220px] w-full sm:h-[246px]"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label="Right-first-time percentage trend from March to August"
-      onMouseLeave={() => setActivePoint(null)}
-    >
-      <defs>
-        <linearGradient id="rft-area" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#0f9a8f" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#0f9a8f" stopOpacity="0.04" />
-        </linearGradient>
-      </defs>
+    return (
+      <svg
+        className={className}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Right-first-time percentage trend from March to August"
+        onMouseLeave={() => setActivePoint(null)}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#0f9a8f" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#0f9a8f" stopOpacity="0.04" />
+          </linearGradient>
+        </defs>
 
-      {yTicks.map((tick) => {
-        const y = yFor(tick);
+        {yTicks.map((tick) => {
+          const y = yFor(tick);
 
-        return (
-          <g key={tick}>
-            <line
-              x1={padding.left}
-              x2={width - padding.right}
-              y1={y}
-              y2={y}
-              stroke="#e5e7eb"
+          return (
+            <g key={tick}>
+              <line
+                x1={padding.left}
+                x2={width - padding.right}
+                y1={y}
+                y2={y}
+                stroke="#e5e7eb"
+              />
+              <text
+                x={padding.left - 10}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-slate-500 text-[11px] font-medium sm:text-[13px]"
+              >
+                {tick}%
+              </text>
+            </g>
+          );
+        })}
+
+        <line
+          x1={padding.left}
+          x2={padding.left}
+          y1={padding.top}
+          y2={padding.top + chartHeight}
+          stroke="#d1d5db"
+        />
+        <line
+          x1={padding.left}
+          x2={padding.left + chartWidth}
+          y1={padding.top + chartHeight}
+          y2={padding.top + chartHeight}
+          stroke="#d1d5db"
+        />
+
+        <path d={areaPath} fill={`url(#${gradientId})`} />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#0f9a8f"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={lineWidth}
+        />
+
+        {coordinates.map((point) => (
+          <g key={point.month}>
+            {showValues ? (
+              <text
+                x={point.x}
+                y={Math.max(point.y - 12, padding.top + 8)}
+                textAnchor="middle"
+                className="fill-slate-700 text-[10px] font-bold"
+              >
+                {point.value.toFixed(1)}%
+              </text>
+            ) : null}
+            <circle
+              cx={point.x}
+              cy={point.y}
+              r={activePoint?.title === point.month ? activePointRadius : pointRadius}
+              fill="#0f9a8f"
+              onBlur={() => setActivePoint(null)}
+              onFocus={() =>
+                setActivePoint({
+                  title: point.month,
+                  value: `${point.value}% right-first-time`,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              onMouseEnter={() =>
+                setActivePoint({
+                  title: point.month,
+                  value: `${point.value}% right-first-time`,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              tabIndex={0}
             />
             <text
-              x={padding.left - 14}
-              y={y + 5}
-              textAnchor="end"
-              className="fill-slate-500 text-[13px] font-medium"
+              x={point.x}
+              y={height - 10}
+              textAnchor="middle"
+              className={monthLabelClassName}
             >
-              {tick}%
+              {point.month}
             </text>
           </g>
-        );
-      })}
-
-      <line
-        x1={padding.left}
-        x2={padding.left}
-        y1={padding.top}
-        y2={padding.top + chartHeight}
-        stroke="#d1d5db"
-      />
-      <line
-        x1={padding.left}
-        x2={padding.left + chartWidth}
-        y1={padding.top + chartHeight}
-        y2={padding.top + chartHeight}
-        stroke="#d1d5db"
-      />
-
-      <path d={areaPath} fill="url(#rft-area)" />
-      <path
-        d={linePath}
-        fill="none"
-        stroke="#0f9a8f"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="4"
-      />
-
-      {coordinates.map((point) => (
-        <g key={point.month}>
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r={activePoint?.title === point.month ? "8" : "6.5"}
-            fill="#0f9a8f"
-            onBlur={() => setActivePoint(null)}
-            onFocus={() =>
-              setActivePoint({
-                title: point.month,
-                value: `${point.value}% right-first-time`,
-                x: point.x,
-                y: point.y,
-              })
-            }
-            onMouseEnter={() =>
-              setActivePoint({
-                title: point.month,
-                value: `${point.value}% right-first-time`,
-                x: point.x,
-                y: point.y,
-              })
-            }
-            tabIndex={0}
+        ))}
+        {activePoint ? (
+          <SvgChartTooltip
+            title={activePoint.title}
+            value={activePoint.value}
+            viewBoxWidth={width}
+            x={activePoint.x}
+            y={activePoint.y}
+            width={tooltipWidth}
           />
-          <text
-            x={point.x}
-            y={height - 12}
-            textAnchor="middle"
-            className="fill-slate-500 text-[14px] font-medium"
-          >
-            {point.month}
-          </text>
-        </g>
-      ))}
-      {activePoint ? (
-        <SvgChartTooltip
-          title={activePoint.title}
-          value={activePoint.value}
-          viewBoxWidth={width}
-          x={activePoint.x}
-          y={activePoint.y}
-          width={190}
-        />
-      ) : null}
-    </svg>
+        ) : null}
+      </svg>
+    );
+  };
+
+  return (
+    <>
+      {renderChart({
+        width: 360,
+        height: 264,
+        padding: { left: 42, right: 14, top: 24, bottom: 42 },
+        minY: 93,
+        maxY: 98,
+        yTicks: [98, 97, 96, 95, 94, 93],
+        className: "mt-4 h-[264px] w-full sm:hidden",
+        gradientId: "rft-area-mobile",
+        lineWidth: 3.25,
+        pointRadius: 4.5,
+        activePointRadius: 6,
+        monthLabelClassName: "fill-slate-500 text-[11px] font-semibold",
+        showValues: true,
+        tooltipWidth: 174,
+      })}
+      {renderChart({
+        width: 640,
+        height: 246,
+        padding: { left: 58, right: 18, top: 16, bottom: 30 },
+        minY: 90,
+        maxY: 100,
+        yTicks: [100, 99, 98, 97, 96, 95, 94, 93, 92, 91, 90],
+        className: "mt-4 hidden h-[246px] w-full sm:block",
+        gradientId: "rft-area-desktop",
+        lineWidth: 4,
+        pointRadius: 6.5,
+        activePointRadius: 8,
+        monthLabelClassName: "fill-slate-500 text-[14px] font-medium",
+        tooltipWidth: 190,
+      })}
+    </>
   );
 }
 

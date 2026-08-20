@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Check } from 'lucide-react'
 
 import {
@@ -311,11 +311,22 @@ function MachiningFlow({ steps }) {
 
   return (
     <>
-      <ol className="md:hidden">
+      <div
+        className="grid items-start px-0.5 pt-1 md:hidden"
+        style={{
+          gridTemplateColumns:
+            'minmax(28px, 1fr) minmax(10px, 0.55fr) minmax(28px, 1fr) minmax(10px, 0.55fr) minmax(28px, 1fr) minmax(10px, 0.55fr) minmax(28px, 1fr) minmax(10px, 0.55fr) minmax(28px, 1fr) minmax(10px, 0.55fr) minmax(28px, 1fr)',
+        }}
+      >
         {steps.map((step, index) => (
-          <MobileFlowStep key={step.label} step={step} isLast={index === steps.length - 1} />
+          <Fragment key={step.label}>
+            <FlowStep compact step={step} />
+            {index < steps.length - 1 ? (
+              <div className={cn('mt-4 h-0.5', step.state === 'done' ? 'bg-teal-600' : 'bg-slate-200')} />
+            ) : null}
+          </Fragment>
         ))}
-      </ol>
+      </div>
 
       <div className="hidden px-1 pt-1 md:block">
         <div
@@ -355,40 +366,19 @@ function FlowTrackSegment({ step, lineTone = 'muted' }) {
   )
 }
 
-function FlowStep({ step }) {
+function FlowStep({ step, compact = false }) {
   return (
-    <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-      <FlowMarker step={step} />
-      <span className="max-w-[86px] text-[10px] font-semibold leading-tight text-slate-500">{step.label}</span>
+    <div className="flex min-w-0 flex-col items-center text-center">
+      <FlowMarker step={step} className={compact ? 'h-8 w-8 text-[11px]' : undefined} />
+      <span
+        className={cn(
+          'font-semibold leading-tight text-slate-500',
+          compact ? 'mt-1.5 max-w-[48px] text-[8px]' : 'mt-2 max-w-[86px] text-[10px]',
+        )}
+      >
+        {step.label}
+      </span>
     </div>
-  )
-}
-
-function MobileFlowStep({ step, isLast }) {
-  const statusText = step.state === 'done' ? 'Complete' : step.state === 'current' ? 'In progress' : 'Pending'
-
-  return (
-    <li className="grid grid-cols-[34px_1fr] gap-3">
-      <div className="flex flex-col items-center">
-        <FlowMarker step={step} className="h-8 w-8 text-[11px]" />
-        {!isLast ? (
-          <div className={cn('min-h-8 w-0.5 flex-1', step.state === 'done' ? 'bg-teal-600' : 'bg-slate-200')} />
-        ) : null}
-      </div>
-      <div className={cn('min-w-0 pt-0.5', !isLast && 'pb-4')}>
-        <div className="text-sm font-semibold leading-tight text-slate-700">{step.label}</div>
-        <div
-          className={cn(
-            'mt-1 text-[11px] font-semibold leading-tight',
-            step.state === 'done' && 'text-teal-700',
-            step.state === 'current' && 'text-orange-600',
-            step.state === 'upcoming' && 'text-slate-400',
-          )}
-        >
-          {statusText}
-        </div>
-      </div>
-    </li>
   )
 }
 
@@ -476,117 +466,162 @@ function MachineUtilizationChart({ items }) {
 
 function CycleTimeTrendChart({ points }) {
   const [activePoint, setActivePoint] = useState(null)
-  const width = 640
-  const height = 238
-  const padding = { left: 72, right: 18, top: 10, bottom: 36 }
   const minY = 3.8
   const maxY = 5
-  const chartWidth = width - padding.left - padding.right
-  const chartHeight = height - padding.top - padding.bottom
-  const yTicks = [5, 4.8, 4.6, 4.4, 4.2, 4, 3.8]
-  const toX = (index) => padding.left + (index / (points.length - 1)) * chartWidth
-  const toY = (value) => padding.top + ((maxY - value) / (maxY - minY)) * chartHeight
   const formatTick = (tick) => `${Number.isInteger(tick) ? tick : tick.toFixed(1)} min`
-  const coords = points.map((point, index) => ({
-    ...point,
-    x: toX(index),
-    y: toY(point.minutes),
-  }))
-  const linePath = coords.reduce((path, point, index) => {
-    if (index === 0) {
-      return `M ${point.x} ${point.y}`
-    }
 
-    const previous = coords[index - 1]
-    const midX = (previous.x + point.x) / 2
-    return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`
-  }, '')
-  const baselineY = padding.top + chartHeight
-  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
+  const renderChart = ({
+    width,
+    height,
+    padding,
+    yTicks,
+    className,
+    gradientId,
+    labelForPoint,
+    labelClassName,
+    pointRadius,
+    activePointRadius,
+    strokeWidth,
+    tooltipWidth,
+  }) => {
+    const chartWidth = width - padding.left - padding.right
+    const chartHeight = height - padding.top - padding.bottom
+    const toX = (index) => padding.left + (index / (points.length - 1)) * chartWidth
+    const toY = (value) => padding.top + ((maxY - value) / (maxY - minY)) * chartHeight
+    const coords = points.map((point, index) => ({
+      ...point,
+      x: toX(index),
+      y: toY(point.minutes),
+    }))
+    const linePath = coords.reduce((path, point, index) => {
+      if (index === 0) {
+        return `M ${point.x} ${point.y}`
+      }
+
+      const previous = coords[index - 1]
+      const midX = (previous.x + point.x) / 2
+      return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`
+    }, '')
+    const baselineY = padding.top + chartHeight
+    const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
+
+    return (
+      <svg
+        className={className}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Weekly cycle time trend for Connecting Rod EN19"
+        onMouseLeave={() => setActivePoint(null)}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.03" />
+          </linearGradient>
+        </defs>
+
+        {yTicks.map((tick) => {
+          const y = toY(tick)
+
+          return (
+            <g key={tick}>
+              <text x={padding.left - 12} y={y + 4} textAnchor="end" className="fill-slate-500 text-[11px] sm:text-[13px]">
+                {formatTick(tick)}
+              </text>
+              <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e5e7eb" strokeWidth="1" />
+            </g>
+          )
+        })}
+
+        <line x1={padding.left} x2={padding.left} y1={padding.top} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
+        <line x1={padding.left} x2={width - padding.right} y1={baselineY} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
+        <path d={areaPath} fill={`url(#${gradientId})`} />
+        <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} />
+
+        {coords.map((point) => (
+          <circle
+            key={point.week}
+            cx={point.x}
+            cy={point.y}
+            r={activePoint?.title === point.week ? activePointRadius : pointRadius}
+            fill="#2563eb"
+            onBlur={() => setActivePoint(null)}
+            onFocus={() =>
+              setActivePoint({
+                title: point.week,
+                value: `${point.minutes} min cycle time`,
+                x: point.x,
+                y: point.y,
+              })
+            }
+            onMouseEnter={() =>
+              setActivePoint({
+                title: point.week,
+                value: `${point.minutes} min cycle time`,
+                x: point.x,
+                y: point.y,
+              })
+            }
+            tabIndex={0}
+          />
+        ))}
+        {activePoint ? (
+          <SvgChartTooltip
+            title={activePoint.title}
+            value={activePoint.value}
+            viewBoxWidth={width}
+            x={activePoint.x}
+            y={activePoint.y}
+            width={tooltipWidth}
+          />
+        ) : null}
+
+        {coords.map((point) => (
+          <text
+            key={`${point.week}-label`}
+            x={point.x}
+            y={height - 8}
+            textAnchor="middle"
+            className={labelClassName}
+          >
+            {labelForPoint(point)}
+          </text>
+        ))}
+      </svg>
+    )
+  }
 
   return (
-    <svg
-      className="mt-2 h-[220px] w-full overflow-visible sm:h-[250px]"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label="Weekly cycle time trend for Connecting Rod EN19"
-      onMouseLeave={() => setActivePoint(null)}
-    >
-      <defs>
-        <linearGradient id="cycle-time-area" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0.03" />
-        </linearGradient>
-      </defs>
-
-      {yTicks.map((tick) => {
-        const y = toY(tick)
-
-        return (
-          <g key={tick}>
-            <text x={padding.left - 14} y={y + 5} textAnchor="end" className="fill-slate-500 text-[13px]">
-              {formatTick(tick)}
-            </text>
-            <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e5e7eb" strokeWidth="1" />
-          </g>
-        )
+    <>
+      {renderChart({
+        width: 360,
+        height: 258,
+        padding: { left: 48, right: 14, top: 18, bottom: 42 },
+        yTicks: [5, 4.6, 4.2, 3.8],
+        className: 'mt-4 h-[258px] w-full overflow-visible sm:hidden',
+        gradientId: 'cycle-time-area-mobile',
+        labelForPoint: (point) => point.week.replace('Week ', 'W'),
+        labelClassName: 'fill-slate-500 text-[11px] font-semibold',
+        pointRadius: 4.5,
+        activePointRadius: 6,
+        strokeWidth: 3.25,
+        tooltipWidth: 156,
       })}
-
-      <line x1={padding.left} x2={padding.left} y1={padding.top} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
-      <line x1={padding.left} x2={width - padding.right} y1={baselineY} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
-      <path d={areaPath} fill="url(#cycle-time-area)" />
-      <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-
-      {coords.map((point) => (
-        <circle
-          key={point.week}
-          cx={point.x}
-          cy={point.y}
-          r={activePoint?.title === point.week ? '7' : '5.5'}
-          fill="#2563eb"
-          onBlur={() => setActivePoint(null)}
-          onFocus={() =>
-            setActivePoint({
-              title: point.week,
-              value: `${point.minutes} min cycle time`,
-              x: point.x,
-              y: point.y,
-            })
-          }
-          onMouseEnter={() =>
-            setActivePoint({
-              title: point.week,
-              value: `${point.minutes} min cycle time`,
-              x: point.x,
-              y: point.y,
-            })
-          }
-          tabIndex={0}
-        />
-      ))}
-      {activePoint ? (
-        <SvgChartTooltip
-          title={activePoint.title}
-          value={activePoint.value}
-          viewBoxWidth={width}
-          x={activePoint.x}
-          y={activePoint.y}
-          width={168}
-        />
-      ) : null}
-
-      {coords.map((point) => (
-        <text
-          key={`${point.week}-label`}
-          x={point.x}
-          y={height - 6}
-          textAnchor="middle"
-          className="fill-slate-500 text-[13px] font-medium"
-        >
-          {point.week}
-        </text>
-      ))}
-    </svg>
+      {renderChart({
+        width: 640,
+        height: 238,
+        padding: { left: 72, right: 18, top: 10, bottom: 36 },
+        yTicks: [5, 4.8, 4.6, 4.4, 4.2, 4, 3.8],
+        className: 'mt-2 hidden h-[250px] w-full overflow-visible sm:block',
+        gradientId: 'cycle-time-area-desktop',
+        labelForPoint: (point) => point.week,
+        labelClassName: 'fill-slate-500 text-[13px] font-medium',
+        pointRadius: 5.5,
+        activePointRadius: 7,
+        strokeWidth: 3,
+        tooltipWidth: 168,
+      })}
+    </>
   )
 }
 

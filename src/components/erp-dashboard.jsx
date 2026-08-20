@@ -499,7 +499,7 @@ export function PageHeader({ title, description, badge }) {
 
 export function KpiGrid({ items }) {
   return (
-    <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
         <KpiCard key={item.label} {...item} />
       ))}
@@ -515,16 +515,16 @@ export function KpiCard({
   accent = "bg-teal-600",
 }) {
   return (
-    <Card className="min-w-0 overflow-hidden rounded-md border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+    <Card className="min-w-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
       <div className={cn("h-[3px]", accent)} />
-      <CardContent className="p-4">
-        <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
+      <CardContent className="p-3 sm:p-4">
+        <div className="text-[9px] font-bold uppercase leading-tight tracking-[0.08em] text-slate-400 sm:text-[10px]">
           {label}
         </div>
-        <div className="mt-2 text-2xl font-bold leading-none text-slate-950">
+        <div className="mt-2 break-words text-[16px] font-bold leading-none text-slate-950 sm:text-2xl">
           {value}
         </div>
-        <div className={cn("mt-2 text-xs font-medium", textTone(tone))}>
+        <div className={cn("mt-2 text-[11px] font-medium leading-tight sm:text-xs", textTone(tone))}>
           {meta}
         </div>
       </CardContent>

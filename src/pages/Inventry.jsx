@@ -108,6 +108,19 @@ function ZoneStat({ label, value, tone, progress }) {
   )
 }
 
+function InventoryDetail({ label, value }) {
+  return (
+    <div className="min-w-0 rounded-md bg-white px-3 py-2">
+      <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </div>
+      <div className="mt-1 break-words text-[11px] font-semibold leading-tight text-slate-700">
+        {value}
+      </div>
+    </div>
+  )
+}
+
 function Inventry() {
   return (
     <DashboardShell activeKey="inventory">
@@ -121,8 +134,36 @@ function Inventry() {
 
       <div className="grid items-start gap-4 xl:grid-cols-[1.35fr_1fr]">
         <DashboardCard title="Finished Goods by Part Number" contentClassName="pt-0">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[620px] text-left text-xs">
+          <div className="grid gap-3 md:hidden">
+            {finishedGoods.map((row) => (
+              <article
+                key={row.item}
+                className="rounded-md border border-slate-200 bg-slate-50/70 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)]"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                      Item
+                    </div>
+                    <div className="mt-1 text-[14px] font-semibold leading-snug text-slate-900">
+                      {row.item}
+                    </div>
+                  </div>
+                  <StatusBadge tone={row.tone} className="shrink-0 px-2.5 py-1 text-[10px] font-semibold">
+                    {row.zone}
+                  </StatusBadge>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <InventoryDetail label="Job/Batch" value={row.batch} />
+                  <InventoryDetail label="Qty" value={row.qty} />
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden md:block md:overflow-x-auto xl:overflow-x-visible">
+            <table className="w-full min-w-[620px] text-left text-xs xl:min-w-0">
               <thead className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 <tr>
                   <th className="px-2 py-3">Item</th>
@@ -203,108 +244,174 @@ function Inventry() {
 
 function MachineCycleTimeChart({ points }) {
   const [activePoint, setActivePoint] = useState(null)
-  const width = 1180
-  const height = 230
-  const padding = { left: 54, right: 18, top: 22, bottom: 34 }
-  const chartWidth = width - padding.left - padding.right
-  const chartHeight = height - padding.top - padding.bottom
   const minY = 3.5
   const maxY = 5
-  const yValues = [5, 4.8, 4.6, 4.4, 4.2, 4, 3.8, 3.5]
-  const yLabels = yValues.map((value) => `${Number.isInteger(value) ? value : value.toFixed(1)} min`)
-  const xStep = chartWidth / (points.length - 1)
-  const toX = (index) => padding.left + index * xStep
-  const toY = (value) => padding.top + ((maxY - value) / (maxY - minY)) * chartHeight
-  const coords = points.map((point, index) => ({
-    ...point,
-    x: toX(index),
-    y: toY(point.minutes),
-  }))
-  const linePath = coords.reduce((path, point, index) => {
-    if (index === 0) {
-      return `M ${point.x} ${point.y}`
-    }
 
-    const previous = coords[index - 1]
-    const midX = (previous.x + point.x) / 2
-    return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`
-  }, '')
-  const baselineY = padding.top + chartHeight
-  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
+  const renderChart = ({
+    width,
+    height,
+    padding,
+    yValues,
+    className,
+    gradientId,
+    strokeWidth,
+    pointRadius,
+    activePointRadius,
+    labelEvery,
+    labelClassName,
+    showValues = false,
+    tooltipWidth,
+  }) => {
+    const chartWidth = width - padding.left - padding.right
+    const chartHeight = height - padding.top - padding.bottom
+    const yLabels = yValues.map((value) => `${Number.isInteger(value) ? value : value.toFixed(1)} min`)
+    const xStep = chartWidth / (points.length - 1)
+    const toX = (index) => padding.left + index * xStep
+    const toY = (value) => padding.top + ((maxY - value) / (maxY - minY)) * chartHeight
+    const coords = points.map((point, index) => ({
+      ...point,
+      x: toX(index),
+      y: toY(point.minutes),
+    }))
+    const linePath = coords.reduce((path, point, index) => {
+      if (index === 0) {
+        return `M ${point.x} ${point.y}`
+      }
+
+      const previous = coords[index - 1]
+      const midX = (previous.x + point.x) / 2
+      return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`
+    }, '')
+    const baselineY = padding.top + chartHeight
+    const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`
+
+    return (
+      <svg
+        className={className}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Machine cycle-time log chart"
+        onMouseLeave={() => setActivePoint(null)}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.03" />
+          </linearGradient>
+        </defs>
+        {yValues.map((value, index) => {
+          const y = toY(value)
+
+          return (
+            <g key={yLabels[index]}>
+              <text x={padding.left - 10} y={y + 4} textAnchor="end" className="fill-slate-500 text-[11px]">
+                {yLabels[index]}
+              </text>
+              <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e5e7eb" strokeWidth="1" />
+            </g>
+          )
+        })}
+        <line x1={padding.left} x2={padding.left} y1={padding.top} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
+        <line x1={padding.left} x2={width - padding.right} y1={baselineY} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
+        <path d={areaPath} fill={`url(#${gradientId})`} />
+        <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} />
+        {coords.map((point) => (
+          <g key={point.part}>
+            {showValues ? (
+              <text
+                x={point.x}
+                y={Math.max(point.y - 10, padding.top + 8)}
+                textAnchor="middle"
+                className="fill-slate-700 text-[9px] font-bold"
+              >
+                {point.minutes.toFixed(1)}
+              </text>
+            ) : null}
+            <circle
+              cx={point.x}
+              cy={point.y}
+              r={activePoint?.title === point.part ? activePointRadius : pointRadius}
+              fill="#2563eb"
+              onBlur={() => setActivePoint(null)}
+              onFocus={() =>
+                setActivePoint({
+                  title: point.part,
+                  value: `${point.minutes} min cycle time`,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              onMouseEnter={() =>
+                setActivePoint({
+                  title: point.part,
+                  value: `${point.minutes} min cycle time`,
+                  x: point.x,
+                  y: point.y,
+                })
+              }
+              tabIndex={0}
+            />
+          </g>
+        ))}
+        {activePoint ? (
+          <SvgChartTooltip
+            title={activePoint.title}
+            value={activePoint.value}
+            viewBoxWidth={width}
+            x={activePoint.x}
+            y={activePoint.y}
+            width={tooltipWidth}
+          />
+        ) : null}
+        {coords.map((point, index) => (
+          index % labelEvery === 0 || index === coords.length - 1 ? (
+            <text
+              key={`${point.part}-label`}
+              x={point.x}
+              y={height - 8}
+              textAnchor="middle"
+              className={labelClassName}
+            >
+              {point.part.replace('Part ', 'P')}
+            </text>
+          ) : null
+        ))}
+      </svg>
+    )
+  }
 
   return (
-    <svg
-      className="mt-4 h-[220px] w-full overflow-visible sm:h-[240px]"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label="Machine cycle-time log chart"
-      onMouseLeave={() => setActivePoint(null)}
-    >
-      <defs>
-        <linearGradient id="cycleFill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0.03" />
-        </linearGradient>
-      </defs>
-      {yValues.map((value, index) => {
-        const y = toY(value)
-
-        return (
-          <g key={yLabels[index]}>
-            <text x={padding.left - 12} y={y + 4} textAnchor="end" className="fill-slate-500 text-[11px]">
-              {yLabels[index]}
-            </text>
-            <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e5e7eb" strokeWidth="1" />
-          </g>
-        )
+    <>
+      {renderChart({
+        width: 360,
+        height: 260,
+        padding: { left: 46, right: 14, top: 24, bottom: 40 },
+        yValues: [5, 4.5, 4, 3.5],
+        className: 'mt-4 h-[260px] w-full overflow-visible sm:hidden',
+        gradientId: 'cycleFillMobile',
+        strokeWidth: 3,
+        pointRadius: 4,
+        activePointRadius: 5.75,
+        labelEvery: 2,
+        labelClassName: 'fill-slate-500 text-[11px] font-semibold',
+        showValues: true,
+        tooltipWidth: 160,
       })}
-      <line x1={padding.left} x2={padding.left} y1={padding.top} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
-      <line x1={padding.left} x2={width - padding.right} y1={baselineY} y2={baselineY} stroke="#d1d5db" strokeWidth="1" />
-      <path d={areaPath} fill="url(#cycleFill)" />
-      <path d={linePath} fill="none" stroke="#2563eb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-      {coords.map((point) => (
-        <circle
-          key={point.part}
-          cx={point.x}
-          cy={point.y}
-          r={activePoint?.title === point.part ? '5.5' : '3.2'}
-          fill="#2563eb"
-          onBlur={() => setActivePoint(null)}
-          onFocus={() =>
-            setActivePoint({
-              title: point.part,
-              value: `${point.minutes} min cycle time`,
-              x: point.x,
-              y: point.y,
-            })
-          }
-          onMouseEnter={() =>
-            setActivePoint({
-              title: point.part,
-              value: `${point.minutes} min cycle time`,
-              x: point.x,
-              y: point.y,
-            })
-          }
-          tabIndex={0}
-        />
-      ))}
-      {activePoint ? (
-        <SvgChartTooltip
-          title={activePoint.title}
-          value={activePoint.value}
-          viewBoxWidth={width}
-          x={activePoint.x}
-          y={activePoint.y}
-          width={170}
-        />
-      ) : null}
-      {coords.map((point) => (
-        <text key={`${point.part}-label`} x={point.x} y={height - 7} textAnchor="middle" className="fill-slate-500 text-[10px]">
-          {point.part}
-        </text>
-      ))}
-    </svg>
+      {renderChart({
+        width: 1180,
+        height: 230,
+        padding: { left: 54, right: 18, top: 22, bottom: 34 },
+        yValues: [5, 4.8, 4.6, 4.4, 4.2, 4, 3.8, 3.5],
+        className: 'mt-4 hidden h-[240px] w-full overflow-visible sm:block',
+        gradientId: 'cycleFillDesktop',
+        strokeWidth: 2.5,
+        pointRadius: 3.2,
+        activePointRadius: 5.5,
+        labelEvery: 1,
+        labelClassName: 'fill-slate-500 text-[10px]',
+        tooltipWidth: 170,
+      })}
+    </>
   )
 }
 
